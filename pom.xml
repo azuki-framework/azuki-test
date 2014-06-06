@@ -33,7 +33,7 @@
 		<repository>
 			<id>azkfw.org</id>
 			<name>Azuki Framework Temporary Repository</name>
-			<url>file://${project.build.directory}//maven-repository</url>
+			<url>file://${project.build.directory}/../../maven-repository</url>
 		</repository>
 	</distributionManagement>
 
@@ -52,14 +52,13 @@
 		<dependency>
 			<groupId>org.azkfw</groupId>
 			<artifactId>azuki-base</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 	
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.1</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
