@@ -22,8 +22,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
-import org.azkfw.persistence.context.Context;
+import org.azkfw.context.Context;
 import org.azkfw.test.context.TestContext;
 
 /**
@@ -54,12 +55,20 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 		assertEquals(null, expected, actual);
 	}
 
+	public static void assertEquals(final File expected, final File actual, final Charset charset) {
+		assertEquals(null, expected, actual, charset);
+	}
+
 	public static void assertEquals(final String message, final File expected, final File actual) {
+		assertEquals(message, expected, actual, Charset.forName(System.getProperty("file.encoding")));
+	}
+
+	public static void assertEquals(final String message, final File expected, final File actual, final Charset charset) {
 		BufferedReader reader1 = null;
 		BufferedReader reader2 = null;
 		try {
-			reader1 = new BufferedReader(new InputStreamReader(new FileInputStream(expected)));
-			reader2 = new BufferedReader(new InputStreamReader(new FileInputStream(actual)));
+			reader1 = new BufferedReader(new InputStreamReader(new FileInputStream(expected), charset));
+			reader2 = new BufferedReader(new InputStreamReader(new FileInputStream(actual), charset));
 
 			String line1, line2;
 			int line = 0;

@@ -17,7 +17,7 @@
  */
 package org.azkfw.test.context;
 
-import org.azkfw.persistence.context.LocalContext;
+import org.azkfw.context.LocalContext;
 
 /**
  * このクラスは、テスト用のコンテキスト機能を実装するクラスです。

@@ -19,6 +19,9 @@ package org.azkfw.test;
 
 import junit.framework.TestCase;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 /**
  * このクラスは、テストケースの実装を行うための基底クラスです。
  * 
@@ -26,6 +29,7 @@ import junit.framework.TestCase;
  * @version 1.0.0 2014/05/30
  * @author Kawakicchi
  */
+@RunWith(JUnit4.class)
 public abstract class AbstractTestCase extends TestCase {
 
 }
