@@ -19,6 +19,8 @@ package org.azkfw.test;
 
 import junit.framework.TestCase;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -32,4 +34,13 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public abstract class AbstractTestCase extends TestCase {
 
+	@Before
+	public void setUp() {
+
+	}
+
+	@After
+	public void tearDown() {
+
+	}
 }

@@ -21,11 +21,16 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import org.azkfw.configuration.ConfigurationFormatException;
 import org.azkfw.context.Context;
+import org.azkfw.plugin.PluginManager;
+import org.azkfw.plugin.PluginServiceException;
 import org.azkfw.test.context.TestContext;
+import org.azkfw.util.StringUtility;
 
 /**
  * このクラスは、永続化機能をサポートしたタスククラスです。
@@ -36,6 +41,8 @@ import org.azkfw.test.context.TestContext;
  */
 public class AbstractPersistenceTestCase extends AbstractTestCase {
 
+	private static boolean PLUGIN_LOAD_FLAG = false;
+
 	/**
 	 * コンテキスト情報を取得する。
 	 * 
@@ -43,6 +50,47 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 	 */
 	protected Context getContext() {
 		return new TestContext("./src/test/resources/");
+	}
+
+	protected String getPluginFile() {
+		return "conf/azuki-plugin.xml";
+	}
+
+	@Override
+	public void setUp() {
+		super.setUp();
+
+		if (!PLUGIN_LOAD_FLAG) {
+			PLUGIN_LOAD_FLAG = true;
+			if (StringUtility.isNotEmpty(getPluginFile())) {
+				try {
+					Context context = getContext();
+					InputStream is = context.getResourceAsStream(getPluginFile());
+					if (null != is) {
+						PluginManager.load(is, context);
+					}
+					PluginManager.initialize();
+				} catch (PluginServiceException ex) {
+					ex.printStackTrace();
+					fail(ex.getLocalizedMessage());
+				} catch (ConfigurationFormatException ex) {
+					ex.printStackTrace();
+					fail(ex.getLocalizedMessage());
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					fail(ex.getLocalizedMessage());
+				}
+			}
+		}
+	}
+
+	@Override
+	public void tearDown() {
+		if (StringUtility.isNotEmpty(getPluginFile())) {
+			PluginManager.destroy();
+		}
+
+		super.tearDown();
 	}
 
 	protected File getTestContextFile(final String aName) {
