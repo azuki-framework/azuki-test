@@ -86,9 +86,6 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 
 	@Override
 	public void tearDown() {
-		if (StringUtility.isNotEmpty(getPluginFile())) {
-			PluginManager.destroy();
-		}
 
 		super.tearDown();
 	}

@@ -35,11 +35,13 @@ import org.junit.runners.JUnit4;
 public abstract class AbstractTestCase extends TestCase {
 
 	@Before
+	@Override
 	public void setUp() {
-
+		
 	}
 
 	@After
+	@Override
 	public void tearDown() {
 
 	}
