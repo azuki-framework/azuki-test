@@ -52,6 +52,10 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 		return new TestContext("./src/test/resources/");
 	}
 
+	protected Context getTestContext() {
+		return new TestContext("./src/test/data/");
+	}
+
 	protected String getPluginFile() {
 		return "conf/azuki-plugin.xml";
 	}
@@ -88,12 +92,6 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 	public void tearDown() {
 
 		super.tearDown();
-	}
-
-	protected File getTestContextFile(final String aName) {
-		Context context = getContext();
-		File file = new File(context.getAbstractPath(aName));
-		return file;
 	}
 
 	public static void assertEquals(final File expected, final File actual) {
