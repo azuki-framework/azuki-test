@@ -37,16 +37,14 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public abstract class AbstractTestCase extends TestCase implements LoggerSupport {
 
-	/**
-	 * Logger
-	 */
+	/** Logger */
 	private Logger logger;
 
 	/**
 	 * コンストラクタ
 	 */
 	public AbstractTestCase() {
-		logger = LoggerFactory.create(AbstractTestCase.class);
+		logger = LoggerFactory.create(getClass());
 	}
 
 	/**

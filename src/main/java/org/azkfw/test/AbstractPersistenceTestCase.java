@@ -23,10 +23,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 
 import org.azkfw.configuration.ConfigurationFormatException;
 import org.azkfw.context.Context;
+import org.azkfw.log.LoggerFactory;
 import org.azkfw.plugin.PluginManager;
 import org.azkfw.plugin.PluginServiceException;
 import org.azkfw.test.context.TestContext;
@@ -41,24 +44,13 @@ import org.azkfw.util.StringUtility;
  */
 public class AbstractPersistenceTestCase extends AbstractTestCase {
 
-	private static boolean PLUGIN_LOAD_FLAG = false;
-
 	/**
-	 * コンテキスト情報を取得する。
-	 * 
-	 * @return コンテキスト情報
+	 * プラグイン読み込みフラグ
+	 * <p>
+	 * 全てのテストで一度のみプラグインを読み込む
+	 * </p>
 	 */
-	protected Context getContext() {
-		return new TestContext("./src/test/resources/");
-	}
-
-	protected Context getTestContext() {
-		return new TestContext("./src/test/data/");
-	}
-
-	protected String getPluginFile() {
-		return "conf/azuki-plugin.xml";
-	}
+	private static boolean PLUGIN_LOAD_FLAG = false;
 
 	@Override
 	public void setUp() {
@@ -66,23 +58,34 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 
 		if (!PLUGIN_LOAD_FLAG) {
 			PLUGIN_LOAD_FLAG = true;
+
+			LoggerFactory.load("org.azkfw.log.Log4jLoggerFactory", "conf/log4j.xml", getContext());
+			setLogger(LoggerFactory.create(this.getClass())); // ロガーを再設定
+
 			if (StringUtility.isNotEmpty(getPluginFile())) {
 				try {
 					Context context = getContext();
 					InputStream is = context.getResourceAsStream(getPluginFile());
 					if (null != is) {
 						PluginManager.load(is, context);
+						PluginManager.initialize();
+					} else {
+						String msg = String.format("Plugin file not found.[%s]", getPluginFile());
+						fatal(msg);
+						fail(msg);
 					}
-					PluginManager.initialize();
 				} catch (PluginServiceException ex) {
-					ex.printStackTrace();
-					fail(ex.getLocalizedMessage());
+					String msg = "Plugin file load error.";
+					fatal(msg, ex);
+					fail(msg);
 				} catch (ConfigurationFormatException ex) {
-					ex.printStackTrace();
-					fail(ex.getLocalizedMessage());
+					String msg = "Plugin file load error.";
+					fatal(msg, ex);
+					fail(msg);
 				} catch (IOException ex) {
-					ex.printStackTrace();
-					fail(ex.getLocalizedMessage());
+					String msg = "Plugin file load error.";
+					fatal(msg, ex);
+					fail(msg);
 				}
 			}
 		}
@@ -94,61 +97,191 @@ public class AbstractPersistenceTestCase extends AbstractTestCase {
 		super.tearDown();
 	}
 
-	public static void assertEquals(final File expected, final File actual) {
+	/**
+	 * コンテキスト情報を取得する。
+	 * 
+	 * @return コンテキスト情報
+	 */
+	protected Context getContext() {
+		return new TestContext("./src/test/resources/");
+	}
+
+	/**
+	 * テスト用のコンテキスト情報を取得する。
+	 * 
+	 * @return コンテキスト情報
+	 */
+	protected Context getTestContext() {
+		return new TestContext("./src/test/data/");
+	}
+
+	/**
+	 * プラグインファイルを取得する。
+	 * 
+	 * @return プラグインファイル
+	 */
+	protected String getPluginFile() {
+		return "conf/azuki-plugin.xml";
+	}
+
+	/**
+	 * テストファイルを文字列として取得する。
+	 * 
+	 * @param name 名前
+	 * @return 文字列
+	 */
+	protected final String getTestFileToString(final String name) {
+		return getTestFileToString(name, Charset.defaultCharset());
+	}
+
+	/**
+	 * テストファイルを文字列として取得する。
+	 * 
+	 * @param name 名前
+	 * @param charset 文字コード
+	 * @return 文字列
+	 */
+	protected final String getTestFileToString(final String name, final Charset charset) {
+		String string = null;
+		try {
+			InputStream stream = getTestContext().getResourceAsStream(name);
+			if (null != stream) {
+				string = getStreamToString(stream, charset);
+			} else {
+				String msg = String.format("File not found.[%s]", name);
+				fatal(msg);
+				fail(msg);
+			}
+		} catch (IOException ex) {
+			String msg = String.format("File read error.[%s]", name);
+			fatal(msg, ex);
+			fail(msg);
+		}
+		return string;
+	}
+
+	/**
+	 * テキストファイルの内容を比較する。
+	 * 
+	 * @param expected 期待値
+	 * @param actual 現行値
+	 */
+	protected final void assertEquals(final File expected, final File actual) {
 		assertEquals(null, expected, actual);
 	}
 
-	public static void assertEquals(final File expected, final File actual, final Charset charset) {
+	/**
+	 * テキストファイルの内容を比較する。
+	 * 
+	 * @param expected 期待値
+	 * @param actual 現行値
+	 * @param charset 文字コード
+	 */
+	protected final void assertEquals(final File expected, final File actual, final Charset charset) {
 		assertEquals(null, expected, actual, charset);
 	}
 
-	public static void assertEquals(final String message, final File expected, final File actual) {
-		assertEquals(message, expected, actual, Charset.forName(System.getProperty("file.encoding")));
+	/**
+	 * テキストファイルの内容を比較する。
+	 * 
+	 * @param message メッセージ
+	 * @param expected 期待値
+	 * @param actual 現行値
+	 */
+	protected final void assertEquals(final String message, final File expected, final File actual) {
+		assertEquals(message, expected, actual, Charset.defaultCharset());
 	}
 
-	public static void assertEquals(final String message, final File expected, final File actual, final Charset charset) {
-		BufferedReader reader1 = null;
-		BufferedReader reader2 = null;
+	/**
+	 * テキストファイルの内容を比較する。
+	 * 
+	 * @param message メッセージ
+	 * @param expected 期待値
+	 * @param actual 現行値
+	 * @param charset 文字コード
+	 */
+	protected final void assertEquals(final String message, final File expected, final File actual, final Charset charset) {
+		String exp = null;
 		try {
-			reader1 = new BufferedReader(new InputStreamReader(new FileInputStream(expected), charset));
-			reader2 = new BufferedReader(new InputStreamReader(new FileInputStream(actual), charset));
+			exp = getStreamToString(new FileInputStream(expected), charset);
+		} catch (IOException ex) {
+			String msg = String.format("File not found.[%s]", expected);
+			fatal(msg, ex);
+			fail(msg);
+		}
+		String act = null;
+		try {
+			act = getStreamToString(new FileInputStream(actual), charset);
+		} catch (IOException ex) {
+			String msg = String.format("File not found.[%s]", expected);
+			fatal(msg, ex);
+			fail(msg);
+		}
 
-			String line1, line2;
-			int line = 0;
-			while (true) {
-				line1 = reader1.readLine();
-				line2 = reader2.readLine();
+		if (null == message) {
+			assertEquals(exp, act);
+		} else {
+			assertEquals(message, exp, act);
+		}
+	}
 
-				if (null == line1 && null == line2) {
-					break;
-				} else if (null == line1 || null == line2) {
-					assertEquals(String.format("line %d", line), line1, line2);
-					break;
-				} else {
-					assertEquals(String.format("line %d", line), line1, line2);
-				}
-
-				line++;
-			}
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			fail();
-		} finally {
-			if (null != reader1) {
+	/**
+	 * ライターを解放する。
+	 * 
+	 * @param writers ライター
+	 */
+	protected final void release(final Writer... writers) {
+		for (Writer writer : writers) {
+			if (null != writer) {
 				try {
-					reader1.close();
+					writer.close();
 				} catch (IOException ex) {
-					ex.printStackTrace();
-				}
-			}
-			if (null != reader2) {
-				try {
-					reader2.close();
-				} catch (IOException ex) {
-					ex.printStackTrace();
+					warn(ex);
 				}
 			}
 		}
+	}
+
+	/**
+	 * リーダーを解放する。
+	 * 
+	 * @param readers リーダー
+	 */
+	protected final void release(final Reader... readers) {
+		for (Reader reader : readers) {
+			if (null != reader) {
+				try {
+					reader.close();
+				} catch (IOException ex) {
+					warn(ex);
+				}
+			}
+		}
+	}
+
+	private String getStreamToString(final InputStream stream, final Charset charset) throws IOException {
+		String lineSeparater = "\n";
+		try {
+			lineSeparater = System.getProperty("line.separator");
+		} catch (SecurityException e) {
+		}
+
+		StringBuilder string = new StringBuilder();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(stream, charset));
+			String line = null;
+			int index = 0;
+			while (null != (line = reader.readLine())) {
+				if (0 != index) {
+					string.append(lineSeparater);
+				}
+				string.append(line);
+				index++;
+			}
+		} finally {
+			release(reader);
+		}
+		return string.toString();
 	}
 }
