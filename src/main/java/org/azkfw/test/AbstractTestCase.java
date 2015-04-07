@@ -24,6 +24,8 @@ import org.azkfw.log.LoggerFactory;
 import org.azkfw.log.LoggerSupport;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -39,6 +41,10 @@ public abstract class AbstractTestCase extends TestCase implements LoggerSupport
 
 	/** Logger */
 	private Logger logger;
+
+	/** テスト名 */
+	@Rule
+	public final TestName testName = new TestName();
 
 	/**
 	 * コンストラクタ
@@ -84,6 +90,15 @@ public abstract class AbstractTestCase extends TestCase implements LoggerSupport
 	 */
 	public void setLogger(final Logger aLogger) {
 		logger = aLogger;
+	}
+
+	/**
+	 * テスト名を取得する。
+	 * 
+	 * @return テスト名
+	 */
+	protected final TestName getTestName() {
+		return testName;
 	}
 
 	/**
