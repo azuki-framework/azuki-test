@@ -17,7 +17,6 @@
  */
 package org.azkfw.test;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -208,24 +207,14 @@ public abstract class AbstractPersistenceTestCase extends AbstractPluginTestCase
 	}
 
 	private String getStreamToString(final InputStream stream, final Charset charset) throws IOException {
-		String lineSeparater = "\n";
-		try {
-			lineSeparater = System.getProperty("line.separator");
-		} catch (SecurityException e) {
-		}
-
 		StringBuilder string = new StringBuilder();
-		BufferedReader reader = null;
+		InputStreamReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(stream, charset));
-			String line = null;
-			int index = 0;
-			while (null != (line = reader.readLine())) {
-				if (0 != index) {
-					string.append(lineSeparater);
-				}
-				string.append(line);
-				index++;
+			reader = new InputStreamReader(stream, charset);
+			char buffer[] = new char[1024];
+			int size = -1;
+			while (-1 != (size = reader.read(buffer, 0, 1024))) {
+				string.append(buffer, 0, size);
 			}
 		} finally {
 			release(reader);

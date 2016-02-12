@@ -86,10 +86,10 @@ public abstract class AbstractTestCase extends TestCase implements LoggerSupport
 	/**
 	 * ロガーを設定します。
 	 * 
-	 * @param aLogger ロガー
+	 * @param logger ロガー
 	 */
-	public void setLogger(final Logger aLogger) {
-		logger = aLogger;
+	public void setLogger(final Logger logger) {
+		this.logger = logger;
 	}
 
 	/**

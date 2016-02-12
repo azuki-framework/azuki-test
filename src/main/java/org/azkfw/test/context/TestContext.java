@@ -38,10 +38,10 @@ public class TestContext extends LocalContext {
 	/**
 	 * コンストラクタ
 	 * 
-	 * @param aBaseDir ベースディレクトリ
+	 * @param baseDir ベースディレクトリ
 	 */
-	public TestContext(final String aBaseDir) {
-		super(aBaseDir);
+	public TestContext(final String baseDir) {
+		super(baseDir);
 	}
 
 }

@@ -68,8 +68,8 @@ public abstract class AbstractPluginTestCase extends AbstractTestCase {
 					Context context = getContext();
 					InputStream is = context.getResourceAsStream(getPluginFile());
 					if (null != is) {
-						PluginManager.load(is, context);
-						PluginManager.initialize();
+						PluginManager.getInstance().load(is, context);
+						PluginManager.getInstance().initialize();
 					} else {
 						String msg = String.format("Plugin file not found.[%s]", getPluginFile());
 						fatal(msg);
